@@ -5,3 +5,20 @@ tags
 *.a
 *.o
 .*.swp
+
+# 编译产生的文件
+*.d
+*.output
+*.bin
+*.img
+
+# 临时文件
+*~
+*.swp
+*.swo
+
+# 构建目录
+build/
+
+# 日志文件
+*.log
