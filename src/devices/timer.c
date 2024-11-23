@@ -89,11 +89,24 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
-
-  ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+    /* 如果 ticks 小于等于 0，则不进行休眠 */
+    if (ticks <= 0) { 
+        return; 
+    }
+    
+    ASSERT (intr_get_level () == INTR_ON);
+    
+    enum intr_level old_level = intr_disable();    /* 关中断 */
+    
+    struct thread *current = thread_current();
+    current->wake_time = timer_ticks() + ticks;    /* 设置唤醒时间，当前时间加上 ticks */
+    
+    /* 按唤醒时间顺序插入睡眠队列 */
+    list_insert_ordered (&sleep_list, &current->elem, wake_time_less, NULL);
+    
+    thread_block();    /* 阻塞当前线程 */
+    
+    intr_set_level(old_level);    /* 恢复中断状态 */
 }
 
 /** Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -165,7 +178,7 @@ timer_print_stats (void)
 {
   printf ("Timer: %"PRId64" ticks\n", timer_ticks ());
 }
-
+
 /** Timer interrupt handler. */
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
