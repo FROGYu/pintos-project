@@ -28,6 +28,9 @@ static struct list ready_list;
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
 
+/** List of sleeping processes. */
+static struct list sleep_list;/* 添加睡眠队列 */
+
 /** Idle thread. */
 static struct thread *idle_thread;
 
@@ -92,6 +95,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&sleep_list);/* 初始化睡眠队列 */
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -375,7 +379,7 @@ thread_get_recent_cpu (void)
   /* Not yet implemented. */
   return 0;
 }
-
+
 /** Idle thread.  Executes when no other thread is ready to run.
 
    The idle thread is initially put on the ready list by
@@ -424,7 +428,7 @@ kernel_thread (thread_func *function, void *aux)
   function (aux);       /**< Execute the thread function. */
   thread_exit ();       /**< If function() returns, kill the thread. */
 }
-
+
 /** Returns the running thread. */
 struct thread *
 running_thread (void) 
@@ -578,7 +582,7 @@ allocate_tid (void)
 
   return tid;
 }
-
+
 /** Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
