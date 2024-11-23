@@ -586,3 +586,17 @@ allocate_tid (void)
 /** Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+/** 比较函数：按唤醒时间排序 
+ * 在队列操作（如插入或排序）时按唤醒时间的升序排列线程
+ * 定时器中断处理函数可以高效检查是否需要唤醒线程。
+*/
+bool
+wake_time_less (const struct list_elem *a, 
+                const struct list_elem *b, 
+                void *aux UNUSED) 
+{
+    struct thread *thread_a = list_entry(a, struct thread, elem);
+    struct thread *thread_b = list_entry(b, struct thread, elem);
+    return thread_a->wake_time < thread_b->wake_time;
+}
