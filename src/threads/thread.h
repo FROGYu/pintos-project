@@ -109,6 +109,12 @@ struct thread
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
+/* 睡眠队列的全局声明 */
+extern struct list sleep_list;
+
+/* 比较函数声明：按唤醒时间排序 */
+bool wake_time_less(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+
 void thread_init (void);
 void thread_start (void);
 
