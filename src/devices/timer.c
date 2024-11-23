@@ -180,11 +180,38 @@ timer_print_stats (void)
 }
 
 /** Timer interrupt handler. */
+/* 定时器中断处理函数
+ * 1. 每次中断触发，更新全局时间 ticks++
+ * 2. 检查 sleep_list 中的线程（只检查头部，头部没有线程则不检查）：
+ *   a. 如果唤醒时间 <= ticks（说明该线程需要被唤醒）：
+ *      i. 从 sleep_list 移除线程
+ *      ii. 调用 thread_unblock 将线程加入 ready_list
+ *   b. 如果唤醒时间 > ticks，停止检查
+ * 3. 调用 thread_tick 更新线程时间片
+ */
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  ticks++;
-  thread_tick ();
+    ticks++;
+    
+    /* 检查睡眠队列 */
+    while (!list_empty (&sleep_list)) 
+    {
+        /* 获取睡眠队列中的第一个线程 */
+        struct thread *t = list_entry (list_front(&sleep_list), 
+                                     struct thread, elem);
+                                     
+        if (t->wake_time > ticks) {
+            /* 最早需要唤醒的线程还未到时间 */
+            break;
+        }
+        
+        /* 从睡眠队列移除并唤醒线程 */
+        list_pop_front (&sleep_list);
+        thread_unblock (t);
+    }
+
+    thread_tick ();
 }
 
 /** Returns true if LOOPS iterations waits for more than one timer
