@@ -29,7 +29,7 @@ static struct list ready_list;
 static struct list all_list;
 
 /** List of sleeping processes. */
-static struct list sleep_list;/* 添加睡眠队列 */
+struct list sleep_list;/* 添加睡眠队列 */
 
 /** Idle thread. */
 static struct thread *idle_thread;
